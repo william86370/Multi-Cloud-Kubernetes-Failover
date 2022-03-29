@@ -1,0 +1,14 @@
+###########################################
+# Dockerfile that builds the aws-cli for K8
+###########################################
+FROM ubuntu:20.04
+
+LABEL maintainer="william86370@gmail.com"
+
+RUN set -x \
+	&& apt-get update \
+	&& apt-get install -y --no-install-recommends --no-install-suggests \
+        awscli \
+        wget \
+		ca-certificates \
+    && rm -rf /var/lib/apt/lists/* 
