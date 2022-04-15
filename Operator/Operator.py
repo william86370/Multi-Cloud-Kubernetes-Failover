@@ -52,7 +52,10 @@ class CloudwatchOperator:
         self.v1 = client.CoreV1Api()
         # get the current namespace
         self.namespace = self.v1.list_namespace().items[0].metadata.name
-
+        # Load Environment Variables
+        
+        self.load_env_vars()
+        # Check the status of the operator
     def check_operator_status(self):
         # This function is called when the operator is checking the cluster status
         print("Performing Operator status check...")
