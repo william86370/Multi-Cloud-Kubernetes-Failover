@@ -1,0 +1,53 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: cloudwatch
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  labels:
+    app: cloudwatch-healthcheck
+  name: cloudwatch-healthcheck
+  namespace: cloudwatch
+spec:
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: cloudwatch-healthcheck
+  template:
+    metadata:
+      labels:
+        app: cloudwatch-healthcheck
+    spec:
+      containers:
+      - env:
+        - name: PORT
+          value: "8080"
+        image: ghcr.io/william86370/cloudwatch-daemon
+        imagePullPolicy: Always
+        name: cloudwatch-healthcheck
+        ports:
+        - containerPort: 8080
+          name: healthcheck
+          protocol: TCP
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cloudwatch-healthcheck-service
+  namespace: cloudwatch
+spec:
+  internalTrafficPolicy: Cluster
+  ports:
+  - name: cloudwatch-healthcheck
+    port: 8080
+    protocol: TCP
+    targetPort: healthcheck
+  selector:
+    app: cloudwatch-healthcheck
+  type: ClusterIP
