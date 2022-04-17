@@ -6,6 +6,7 @@
 # Description:
 # The Daemon runs on each of the nodes in the cluster and checks the health of the node.
 # The Daemon will expose a REST API to the operator to pull the information from the node.
+import json
 
 from flask import Flask
 import os
@@ -21,6 +22,7 @@ global pod_serviceaccount
 global node_name
 global cloud_provider
 global v1_api
+global port
 
 # Colored output Messages WARNING, ERROR, INFO
 init(autoreset=True)
@@ -46,14 +48,8 @@ app = Flask(__name__)
 
 @app.route("/")
 def default():
-    return "CloudWatch-Healthcheck is running Try /healthcheck"
-
-
-@app.route('/healthcheck')
-def healthcheck():
     global pod_name
     global pod_namespace
-    global pod_ip
     global pod_serviceaccount
     global node_name
     global cloud_provider
@@ -61,7 +57,6 @@ def healthcheck():
     information = {
         "pod_name": pod_name,
         "pod_namespace": pod_namespace,
-        "pod_ip": pod_ip,
         "pod_serviceaccount": pod_serviceaccount,
         "node_name": node_name,
         "cloud_provider": cloud_provider,
@@ -69,32 +64,107 @@ def healthcheck():
     }
     return information
 
+
 def get_cloudprovider_from_node():
     global cloud_provider
     global v1_api
     global node_name
     print_info("[INFO] Getting cloud provider from KubeAPI")
-    try:
-        node = v1_api.read_node(node_name)
-        cloud_provider = node.metadata.label['cloudwatch/provider']
-        print_info("Cloud Provider: " + cloud_provider)
-        return cloud_provider
-    finally:
-        print_error("[Error] Error getting node from API")
-        print_error("[Error] Ensure RBAC Permissions are set up correctly")
-        print_error("[Error] Exiting Daemon...")
-        exit(1)
-        return None
+    node = v1_api.read_node(node_name)
+    cloud_provider = node.metadata.labels['cloudwatch/provider']
+    print_info("Cloud Provider: " + cloud_provider)
+    return cloud_provider
+
+
+def create_service():
+    global pod_name
+    global pod_namespace
+    global pod_serviceaccount
+    global node_name
+    global cloud_provider
+    global v1_api
+    global port
+    print_info("[INFO] Creating Service")
+    print("------------------------------------------------------")
+    service_name = "cloudwatch-healthcheck-" + node_name
+    body = client.V1Service(
+        api_version="v1",
+        kind="Service",
+        metadata=client.V1ObjectMeta(name=service_name),
+        spec=client.V1ServiceSpec(
+            type="ClusterIP",
+            selector={"cloudwatch.daemon.node": node_name},
+            ports=[client.V1ServicePort(
+                port=port,
+                target_port=port
+            )]
+        )
+    )
+    v1_api.create_namespaced_service(namespace=pod_namespace, body=body)
+    print_info("[INFO] Service Created")
+    print("------------------------------------------------------")
+    return
+
+
+def add_pod_label():
+    # Add label to pod
+    global pod_name
+    global pod_namespace
+    global pod_serviceaccount
+    global node_name
+    global cloud_provider
+    global v1_api
+    print_info("[INFO] Adding Label to Pod")
+    print("------------------------------------------------------")
+    body = {
+        "metadata": {
+            "labels": {
+                "cloudwatch.daemon.node": node_name}
+        }
+    }
+    v1_api.patch_namespaced_pod(pod_name, pod_namespace, body)
+    print_info("[INFO] Label Added")
+    print("------------------------------------------------------")
+    return
+
+
+def remove_prev_service():
+    global pod_name
+    global pod_namespace
+    global pod_serviceaccount
+    global node_name
+    global cloud_provider
+    global v1_api
+    # This Function will create a service for the node to be able to communicate with the operator
+    print_info("[INFO] Creating Service for Healthcheck on Node " + node_name)
+    print("------------------------------------------------------")
+    # Check if the service already exists
+    print_info("[INFO] Checking if service already exists")
+    service_name = "cloudwatch-healthcheck-" + node_name
+    services = v1_api.list_namespaced_service(namespace=pod_namespace)
+    for service in services.items:
+        if service.metadata.name == service_name:
+            print_info("[INFO] Service already exists")
+            # print_info("[INFO] Deleting Service")
+            # v1_api.delete_namespaced_service(name=service_name, namespace=pod_namespace)
+            # print_info("[INFO] Service Deleted")
+            print("------------------------------------------------------")
+            return
+    print_info("[INFO] Service does not exist")
+    # Create the new service
+    create_service()
+    print("------------------------------------------------------")
+    return
 
 
 if __name__ == "__main__":
     global pod_name
     global pod_namespace
-    global pod_ip
     global pod_serviceaccount
     global node_name
     global cloud_provider
     global v1_api
+    global port
     # Check if the Operator is in development mode
     # If it is in development mode, it will use the local kubernetes cluster
     print_info("[INFO] Starting Cloudwatch Daemonset V1.0")
@@ -144,10 +214,14 @@ if __name__ == "__main__":
         print_error("[Error] This is likely due to the Operator not being run as a Pod")
         print_error("[Error] Exiting...")
         exit(1)
-
     # Using the Node name, get the Cloud Provider from labels
     get_cloudprovider_from_node()
 
     port = int(os.getenv("PORT", 8080))
+    # Add node to pod as a label
+    add_pod_label()
+    # Remove the old service
+    remove_prev_service()
+    # Create the new DaemonSet
     print_info(f"Starting Healthcheck daemon on port {port}")
     app.run(host='0.0.0.0', port=port)
