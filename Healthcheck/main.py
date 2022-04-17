@@ -1,10 +1,45 @@
-# CloutWatch-Healthcheck
-#
-# Copyright (C) 2022 William Wright <
-import os
+# Developed by William Wright for Senior Project at Capitol Technology University
+# Cloudwatch Healthcheck Daemon
+# Author: William Wright
+# Date: 2022-04-17
+# Version: 1.0
+# Description:
+# The Daemon runs on each of the nodes in the cluster and checks the health of the node.
+# The Daemon will expose a REST API to the operator to pull the information from the node.
 
 from flask import Flask
-import requests
+import os
+from kubernetes import client, config
+import colorama
+from colorama import Fore
+from colorama import init
+
+global pod_name
+global pod_namespace
+global pod_ip
+global pod_serviceaccount
+global node_name
+global cloud_provider
+global v1_api
+
+# Colored output Messages WARNING, ERROR, INFO
+init(autoreset=True)
+
+
+def print_warning(message):
+    print(Fore.YELLOW + message)
+    return
+
+
+def print_error(message):
+    print(Fore.RED + message)
+    return
+
+
+def print_info(message):
+    print(Fore.GREEN + message)
+    return
+
 
 app = Flask(__name__)
 
@@ -14,38 +49,105 @@ def default():
     return "CloudWatch-Healthcheck is running Try /healthcheck"
 
 
-#
-# @app.route("/get_cloud_provider")
-# def get_cloud_provider():
-#     """
-#     Using Low Level API to get cloud provider
-#     :return: cloud provider
-#     Use IMDSv2 to get cloud provider
-#     """
-#     # Check if cloud provider is AWS
-#     try:
-#         path = 'latest/dynamic/instance-identity/document'
-#         url = f'http://169.254.169.254/{path}'
-#         response = requests.get(url)
-#         if response.status_code == 200:
-#             # Check Availability Zone
-#             availability_zone = response.json()['availabilityZone']
-#             if availability_zone.startswith('us-east-'):
-#                 return 'AWS'
-#             else:
-#                 return 'Azure'
-#     except:
-#         return "Unknown"
-
-
 @app.route('/healthcheck')
 def healthcheck():
-    return "OK"
+    global pod_name
+    global pod_namespace
+    global pod_ip
+    global pod_serviceaccount
+    global node_name
+    global cloud_provider
+    print_info("[INFO] Processing Healthcheck...")
+    information = {
+        "pod_name": pod_name,
+        "pod_namespace": pod_namespace,
+        "pod_ip": pod_ip,
+        "pod_serviceaccount": pod_serviceaccount,
+        "node_name": node_name,
+        "cloud_provider": cloud_provider,
+        "cloud_provider_status": "OK",
+    }
+    return information
+
+def get_cloudprovider_from_node():
+    global cloud_provider
+    global v1_api
+    global node_name
+    print_info("[INFO] Getting cloud provider from KubeAPI")
+    try:
+        node = v1_api.read_node(node_name)
+        cloud_provider = node.metadata.label['cloudwatch/provider']
+        print_info("Cloud Provider: " + cloud_provider)
+        return cloud_provider
+    finally:
+        print_error("[Error] Error getting node from API")
+        print_error("[Error] Ensure RBAC Permissions are set up correctly")
+        print_error("[Error] Exiting Daemon...")
+        exit(1)
+        return None
 
 
 if __name__ == "__main__":
-    print("Starting CloudWatch-Healthcheck")
-    # Get port from environment variable or choose 8080 as local Healthcheck port if no environment variable found
+    global pod_name
+    global pod_namespace
+    global pod_ip
+    global pod_serviceaccount
+    global node_name
+    global cloud_provider
+    global v1_api
+    # Check if the Operator is in development mode
+    # If it is in development mode, it will use the local kubernetes cluster
+    print_info("[INFO] Starting Cloudwatch Daemonset V1.0")
+    print("Developed by William Wright for Senior Project at Capitol Technology University")
+
+    if os.environ.get('CLOUDWATCH_OPERATOR_DEVELOPMENT_MODE') == 'true':
+        print_warning("[DEV] Running in development mode")
+        # Check for mounted kubeconfig file in development mode
+        if os.path.exists("/app/kubeconfig"):
+            print_info("[DEV] Loading kubeconfig file from /app/kubeconfig")
+            config.load_kube_config(config_file="/app/kubeconfig")
+        else:
+            print_info("[DEV] Loading kubeconfig file from default location")
+            config.load_kube_config()
+    else:
+        # Production mode
+        print_info("[INFO] Production mode detected")
+        # Load Kubeconfig from running Cluster
+        try:
+            config.load_incluster_config()
+            # This is a production cluster
+            print_info("[INFO] Running in cluster")
+        except config.config_exception.ConfigException:
+            print_error("[Error] Failed to load kubeconfig from Service Account")
+            print_error("[Error] Please ensure the Service Account has the correct permissions")
+            print_error("[Error] Exiting...")
+            exit(1)
+
+    # Cluster will be loaded by now
+    v1_api = client.CoreV1Api()
+    print_info("[INFO] KubeAPI Successfully Connected to Cluster")
+    # Get the current Pod name and namespace
+    try:
+        pod_serviceaccount = os.environ['POD_SERVICEACCOUNT']
+        pod_name = os.environ['POD_NAME']
+        pod_namespace = os.environ['POD_NAMESPACE']
+        node_name = os.environ['NODE_NAME']
+
+        print("-------------------------------------------------------")
+        print(f"Pod Name: {pod_name}")
+        print(f"Pod Namespace: {pod_namespace}")
+        print(f"Pod Service Account: {pod_serviceaccount}")
+        print(f"Node Name: {node_name}")
+        print("-------------------------------------------------------")
+    except KeyError:
+        print_error("[Error] Unable to get Pod information from environment variables")
+        print_error("[Error] This is likely due to the Operator not being run as a Pod")
+        print_error("[Error] Exiting...")
+        exit(1)
+
+    # Using the Node name, get the Cloud Provider from labels
+    get_cloudprovider_from_node()
+
     port = int(os.getenv("PORT", 8080))
-    print(f"Starting Healthcheck on port {port}")
+    print_info(f"Starting Healthcheck daemon on port {port}")
     app.run(host='0.0.0.0', port=port)

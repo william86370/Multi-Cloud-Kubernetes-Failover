@@ -23,7 +23,7 @@ def get_cloud_provider():
     try:
         path = 'latest/dynamic/instance-identity/document'
         url = f'http://169.254.169.254/{path}'
-        response = requests.get(url)
+        response = requests.get(url, timeout=5)
         if response.status_code == 200:
             # Check Availability Zone
             availability_zone = response.json()['availabilityZone']
@@ -32,7 +32,7 @@ def get_cloud_provider():
             else:
                 return 'Azure'
     finally:
-        return "Unknown"
+        return "self-hosted"
 
 
 def annotate_node(node_name, cloud_provider):
@@ -41,8 +41,14 @@ def annotate_node(node_name, cloud_provider):
     # Find the node by name and annotate it with the cloud provider
     v1 = client.CoreV1Api()
     node = v1.read_node(node_name)
-    node.metadata.labels['cloudwatch.cloudprovider'] = cloud_provider
-    v1.patch_node(node_name, node)
+    body = {
+        "metadata": {
+            "labels": {
+                "cloudwatch/provider": cloud_provider}
+        }
+    }
+
+    v1.patch_node(node_name, body)
     print(f'[INFO] Annotated node {node_name} with cloud provider {cloud_provider}')
     print("-------------------------------------------------------")
     print(f'Node: {node.metadata.name}')

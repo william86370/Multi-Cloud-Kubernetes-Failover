@@ -1,0 +1,61 @@
+# We love RBAC and we use it to manage permissions
+# RIP PSP V1.25 - Will W
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: cloudwatch
+---
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+ namespace: cloudwatch
+ name: cloudwatch-init-role
+rules:
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["get", "patch", "update"]
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+ name: cloudwatch-init-account-binding
+ namespace: cloudwatch
+subjects:
+- kind: ServiceAccount
+  name: cloudwatch-init-account
+  namespace: cloudwatch
+roleRef:
+ kind: Role
+ name: cloudwatch-init-role
+ apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+   # only grant access to the namespace the service account is in
+  name: cloudwatch-init-clusterrole-node-patch
+rules:
+- apiGroups: [""]
+  resources: ["nodes"]
+  verbs: ["get", "patch"]
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+ name: cloudwatch-init-account-patch-nodes-binding
+subjects:
+- kind: ServiceAccount
+  name: cloudwatch-init-account
+  namespace: cloudwatch
+roleRef:
+ kind: ClusterRole
+ name: cloudwatch-init-clusterrole-node-patch
+ apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: "cloudwatch-init-account"
+  namespace: cloudwatch
+---
