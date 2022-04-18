@@ -37,8 +37,6 @@ def print_info(message):
     print(Fore.GREEN + message)
     return
 
-
-
 def main():
     # Cloudwatch Operator
     # Check if the operator is running in a kubernetes cluster
