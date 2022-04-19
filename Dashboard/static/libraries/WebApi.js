@@ -1,7 +1,7 @@
 
 //Define Global Structures
-const WebAPI_MainURL = "http://API.loot.agency:28015/";
-const WebAPI_TestURL = "http://localhost:28015/";
+const WebAPI_MainURL = window.location.href;
+const WebAPI_TestURL = window.location.href;
 var DebugMode = true;
 const WebAPI_Endpoints = {
     Cluster_status:"api/v1/cluster/status",

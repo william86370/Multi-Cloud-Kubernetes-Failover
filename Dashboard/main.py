@@ -7,7 +7,7 @@
 # It is responsible for setting up the flask server and handling all requests.
 
 import json
-from flask import Flask
+from flask import Flask, render_template
 # Add CORS support
 from flask_cors import CORS, cross_origin
 
@@ -64,11 +64,7 @@ app = Flask(__name__)
 
 @app.route("/")
 def default():
-    print_info("[INFO] Processing Dashboard...")
-    information = {
-        "cloud_provider_status": "OK",
-    }
-    return information
+    return render_template('Home.html')
 
 
 def get_nodes_online():
@@ -149,7 +145,7 @@ def get_cloud_providers():
     else:
         print_warning("[WARN] Some AWS nodes are offline")
         cloud_provider_color_aws = YELLOW
-    cloud_provider_count_aws = str(cloud_provider_count_aws[1]) + "/" + str(cloud_provider_count_aws[0])
+    cloud_provider_count_aws = str(cloud_provider_count_aws[1]) + "/" + str(cloud_provider_count_aws[0]) + " Ready"
 
     if cloud_provider_count_azure[1] == 0:
         print_warning("[WARN] No Azure nodes are online")
@@ -160,7 +156,7 @@ def get_cloud_providers():
     else:
         print_warning("[WARN] Some Azure nodes are offline")
         cloud_provider_color_azure = YELLOW
-    cloud_provider_count_azure = str(cloud_provider_count_azure[1]) + "/" + str(cloud_provider_count_azure[0])
+    cloud_provider_count_azure = str(cloud_provider_count_azure[1]) + "/" + str(cloud_provider_count_azure[0]) + " Ready"
 
     if cloud_provider_count_other[1] == 0:
         print_warning("[WARN] No self-hosted nodes are online")
@@ -171,7 +167,7 @@ def get_cloud_providers():
     else:
         print_warning("[WARN] Some self-hosted nodes are offline")
         cloud_provider_color_other = YELLOW
-    cloud_provider_count_other = str(cloud_provider_count_other[1]) + "/" + str(cloud_provider_count_other[0])
+    cloud_provider_count_other = str(cloud_provider_count_other[1]) + "/" + str(cloud_provider_count_other[0]) + " Ready"
 
     print_data("[DATA] AWS Nodes Ready: " + str(cloud_provider_count_aws))
     print_data("[DATA] AZURE Nodes Ready: " + str(cloud_provider_count_azure))

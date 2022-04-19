@@ -5,11 +5,11 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
-	<script src="libraries/jquery-1.10.2.js" type="text/javascript"></script>
-	<script src="libraries/bootstrap.js" type="text/javascript"></script>
-	<script src="libraries/WebApi.js" type="text/javascript"></script>
-<title>Home</title>
-<link rel="stylesheet" type="text/css" id="applicationStylesheet" href="Home.css"/>
+	<script src="{{ url_for('static', filename= 'libraries/jquery-1.10.2.js') }}" type="text/javascript"></script>
+	<script src="{{ url_for('static', filename= 'libraries/bootstrap.js') }}" type="text/javascript"></script>
+	<script src="{{ url_for('static', filename= 'libraries/WebApi.js') }}" type="text/javascript"></script>
+<title>Cloudwatch Dashboard</title>
+<link rel="stylesheet" type="text/css" id="applicationStylesheet" href="{{ url_for('static', filename= 'Home.css') }}"/>
 </head>
 <body>
 <div id="Home">
@@ -90,7 +90,7 @@
 <div id = "main_container">
 
 	<div id="SpinnerButton_text" class="Spinner_Button_text">
-		<input class="Primary__007BFF" value="Refresh" type="submit" onclick=""/>
+		<button class="Primary__007BFF" type="button" onclick="getURL();">Refresh</button>
 	</div>
 	<div id="Status">
 		<span>Status</span>
@@ -281,5 +281,8 @@
 		// Get the Cluster Information every 15 seconds
 		setInterval(get_cluster_information, 5000)
 	});
+	function getURL() {
+        alert("The URL of this page is: " + window.location.href);
+    }
 </script>
 </html>
