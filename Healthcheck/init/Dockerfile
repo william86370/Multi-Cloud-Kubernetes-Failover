@@ -1,7 +1,9 @@
 ARG PYTHON_VERSION=3.9.12-buster
 ARG HEALTHCHECK_PORT=8080
+ARG PYTHON_APP=init.py
 FROM python:${PYTHON_VERSION}
-
+ARG HEALTHCHECK_PORT
+ARG PYTHON_APP
 LABEL org.opencontainers.image.authors = "william86370"
 LABEL org.opencontainers.image.created = "2022-04-17"
 LABEL org.opencontainers.image.documentation = "https://github.com/william86370/Multi-Cloud-Kubernetes-Failover"
@@ -15,9 +17,9 @@ WORKDIR /app
 COPY requirements.txt /app
 RUN pip install -r requirements.txt
 # Copy the init script
-COPY init.py /app
+COPY ./${PYTHON_APP} /app/${TARGET_APP}
 # Expose the default healthcheck port
 ENV PORT=${HEALTHCHECK_PORT}
 EXPOSE ${HEALTHCHECK_PORT}
-
-CMD ["python3", "init.py"]
+ENV PYTHON_APP=${PYTHON_APP}
+CMD python3 ${PYTHON_APP}

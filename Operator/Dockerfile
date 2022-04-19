@@ -1,6 +1,6 @@
 ARG PYTHON_VERSION=3.9.12-buster
 ARG HEALTHCHECK_PORT=8080
-ARG PYTHON_APP=main.py
+ARG PYTHON_APP=operator.py
 FROM python:${PYTHON_VERSION}
 ARG HEALTHCHECK_PORT
 ARG PYTHON_APP
@@ -8,8 +8,8 @@ LABEL org.opencontainers.image.authors = "william86370"
 LABEL org.opencontainers.image.created = "2022-04-17"
 LABEL org.opencontainers.image.documentation = "https://github.com/william86370/Multi-Cloud-Kubernetes-Failover"
 LABEL org.opencontainers.image.version = "1.0"
-LABEL org.opencontainers.image.title = "Cloudwatch Healthcheck Daemon"
-LABEL org.opencontainers.image.description = "Exposes a healthcheck endpoint to check the health of the Kubernetes node"
+LABEL org.opencontainers.image.title = "Cloudwatch Operator"
+LABEL org.opencontainers.image.description = "The main operator for the Multi-Cloud-Kubernetes-Failover application"
 
 RUN mkdir /app
 WORKDIR /app

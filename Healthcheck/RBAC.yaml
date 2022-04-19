@@ -13,9 +13,32 @@ metadata:
  namespace: cloudwatch
  name: cloudwatch-privileged-role
 rules:
-- apiGroups: [""]
-  resources: ["pods","services","endpoints"]
-  verbs: ["*"]
+- apiGroups:
+  - ""
+  resources:
+  - pods
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - apps
+  resources:
+  - deployments
+  verbs:
+  - list
+  - get
+- apiGroups:
+  - apps
+  resources:
+  - daemonsets
+  verbs:
+  - list
+  - get
 ---
 kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
@@ -34,12 +57,31 @@ roleRef:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-   # only grant access to the namespace the service account is in
   name: cloudwatch-privileged-cluster-role
 rules:
-- apiGroups: [""]
-  resources: ["nodes"]
-  verbs: ["get", "patch"]
+- apiGroups:
+  - ""
+  resources:
+  - nodes
+  verbs:
+  - get
+  - patch
+  - list
+  - watch
+- apiGroups:
+  - "apps"
+  resources:
+  - deployments
+  verbs:
+  - get
+  - list
+- apiGroups:
+  - "apps"
+  resources:
+  - daemonSets
+  verbs:
+  - get
+  - list
 ---
 kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1

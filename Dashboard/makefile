@@ -8,7 +8,7 @@ REPO=ghcr.io/william86370
 application_version=latest
 IMAGEFULLNAME=${REPO}/${IMAGENAME}:${application_version}
 
-.PHONY: help build push apply all
+.PHONY: help build push all
 
 help:
 	    @echo "Makefile arguments:"
@@ -33,3 +33,20 @@ push:
 	    @docker push ${IMAGEFULLNAME}
 
 all: build push
+
+.PHONY: clean-image
+clean-image:
+	@echo "+ $@"
+	@docker rmi ${IMAGEFULLNAME}  || true
+.PHONY: build-containers
+build-containers:
+	@echo "Building All Operator Containers"
+	@echo "\nBuild cloudwatch-healthcheck"
+	@echo ""
+	@docker build -t ${REPO}/cloudwatch-healthcheck:${application_version} -f ./Healthcheck/Dockerfile ./Healthcheck
+	@echo "\nBuild cloudwatch-dashboard"
+	@echo ""
+	@docker build -t ${REPO}/cloudwatch-dashboard:${application_version} -f ./Dashboard/Dockerfile ./Dashboard
+	@echo "\nBuild cloudwatch-operator"
+	@echo ""
+	@docker build -t ${REPO}/cloudwatch-operator:${application_version} -f ./Operator/Dockerfile ./Operator

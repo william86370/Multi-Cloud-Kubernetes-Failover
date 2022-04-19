@@ -9,16 +9,20 @@ LABEL org.opencontainers.image.created = "2022-04-17"
 LABEL org.opencontainers.image.documentation = "https://github.com/william86370/Multi-Cloud-Kubernetes-Failover"
 LABEL org.opencontainers.image.version = "1.0"
 LABEL org.opencontainers.image.title = "Cloudwatch Dashboard"
-LABEL org.opencontainers.image.description = "Exposes a healthcheck endpoint to check the health of the Kubernetes node"
+LABEL org.opencontainers.image.description = "The Cloudwatch Dashboard is a web application that provides a dashboard for monitoring and managing the state of your Kubernetes cluster."
 
 RUN mkdir /app
 WORKDIR /app
 # Copy Python requirements
 COPY requirements.txt /app
 RUN pip install -r requirements.txt
+# The dashboarrd requires the static files to be served from the same host
+# as the application.
+COPY ./static /app/static
+COPY ./templates /app/templates
 # Copy the init script
 COPY ./${PYTHON_APP} /app/${TARGET_APP}
-# Expose the default healthcheck port
+# Expose the default dashboard port
 ENV PORT=${HEALTHCHECK_PORT}
 EXPOSE ${HEALTHCHECK_PORT}
 ENV PYTHON_APP=${PYTHON_APP}

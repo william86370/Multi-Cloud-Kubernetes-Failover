@@ -156,7 +156,8 @@ def get_cloud_providers():
     else:
         print_warning("[WARN] Some Azure nodes are offline")
         cloud_provider_color_azure = YELLOW
-    cloud_provider_count_azure = str(cloud_provider_count_azure[1]) + "/" + str(cloud_provider_count_azure[0]) + " Ready"
+    cloud_provider_count_azure = str(cloud_provider_count_azure[1]) + "/" + str(
+        cloud_provider_count_azure[0]) + " Ready"
 
     if cloud_provider_count_other[1] == 0:
         print_warning("[WARN] No self-hosted nodes are online")
@@ -167,7 +168,8 @@ def get_cloud_providers():
     else:
         print_warning("[WARN] Some self-hosted nodes are offline")
         cloud_provider_color_other = YELLOW
-    cloud_provider_count_other = str(cloud_provider_count_other[1]) + "/" + str(cloud_provider_count_other[0]) + " Ready"
+    cloud_provider_count_other = str(cloud_provider_count_other[1]) + "/" + str(
+        cloud_provider_count_other[0]) + " Ready"
 
     print_data("[DATA] AWS Nodes Ready: " + str(cloud_provider_count_aws))
     print_data("[DATA] AZURE Nodes Ready: " + str(cloud_provider_count_azure))
@@ -182,7 +184,8 @@ def get_deployment_status(deployment_name):
     global v1_api_apps
     deployment_status_color = RED
     deployment_status_count = [0, 0]
-    deployments = v1_api_apps.list_namespaced_deployment(namespace=pod_namespace, label_selector="app=" + deployment_name)
+    deployments = v1_api_apps.list_namespaced_deployment(namespace=pod_namespace,
+                                                         label_selector="app=" + deployment_name)
     for deployment in deployments.items:
         deployment_status_count[0] += deployment.status.replicas
         deployment_status_count[1] += deployment.status.ready_replicas
