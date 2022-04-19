@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="utf-8"/>
 <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
@@ -90,7 +90,7 @@
 <div id = "main_container">
 
 	<div id="SpinnerButton_text" class="Spinner_Button_text">
-		<input class="Primary__007BFF" value="Refresh" type="submit" onclick="CreateC2SCluster()"/>
+		<input class="Primary__007BFF" value="Refresh" type="submit" onclick=""/>
 	</div>
 	<div id="Status">
 		<span>Status</span>
@@ -278,41 +278,8 @@
 		// Don't do This in production
 		// Load the Page information
 		get_cluster_information()
-
-
-
-		// //when window Loads Pull Profile Information and see if the user has a profile
-		// Get_Profile();
-		// //pull from local storage
-		// let LoggedInUser = JSON.parse(localStorage.getItem('LoggedInUser'));
-		//
-		// //Set the Profile Picture
-		// if(LoggedInUser.ProfileData.personal){
-		// 	if(LoggedInUser.ProfileData.personal.pfp){
-		// 		document.getElementById('pfptop').src = LoggedInUser.ProfileData.personal.pfp;
-		// 		document.getElementById('PfpMain').src = LoggedInUser.ProfileData.personal.pfp;
-		// 	}
-		// 	if(LoggedInUser.ProfileData.personal.bio){
-		// 		document.getElementById('This_Is_the_User_Bio_Section__').innerHTML = LoggedInUser.ProfileData.personal.bio;
-		// 	}
-		// }
-		// //About me section
-		// document.getElementById('William_Wright').innerHTML = LoggedInUser.ProfileData.info.firstname + " " + LoggedInUser.ProfileData.info.lastname;
-		// document.getElementById('FirstNameBox').value = LoggedInUser.ProfileData.info.firstname;
-		// document.getElementById('LastNameBox').value = LoggedInUser.ProfileData.info.lastname;
-		// document.getElementById('EmailBox').value = LoggedInUser.AccountData.username;
-		// if (!LoggedInUser.ProfileData.info.phonenumber) {
-		// 	document.getElementById('PhoneBox').value = "Not Specified";
-		// } else {
-		// 	document.getElementById('PhoneBox').value = LoggedInUser.ProfileData.info.phonenumber ;
-		// }
-		// GetAllCourses(GetAllCoursesUpdate);
-		// //Download and update Course Selection
-		// UpdateCourseDisplayList();
-		// //download and update Jobs for me
-		// SearchForJobStudent2(UpdateJobsDiaplayList);
-
-
+		// Get the Cluster Information every 15 seconds
+		setInterval(get_cluster_information, 5000)
 	});
 </script>
 </html>

@@ -2,3 +2,4 @@ flask
 requests
 kubernetes
 colorama
+flask_cors
