@@ -1,0 +1,30 @@
+# kill rke2
+/usr/local/bin/rke2-uninstall.sh
+
+
+
+systemctl stop firewalld
+systemctl disable firewalld
+systemctl start nftables
+systemctl enable nftables
+
+
+curl -s -H Metadata:true --noproxy "*" "http://169.254.169.254/latest/dynamic/instance-identity/document" | jq
+
+curl -s -H Metadata:true --noproxy "*" "http://169.254.169.254/metadata/instance?api-version=2021-02-01" 
+
+
+
+http://169.254.169.254/metadata/instance?api-version=2021-02-01
+
+
+kubectl apply -f /home/wawright/workspace/Multi-Cloud-Kubernetes-Failover/Healthcheck/RBAC.yaml -f /home/wawright/workspace/Multi-Cloud-Kubernetes-Failover/Healthcheck/deploy.yml -f /home/wawright/workspace/Multi-Cloud-Kubernetes-Failover/Dashboard/deploy.yml
+
+
+
+
+kubectl apply -f /home/wawright/workspace/Multi-Cloud-Kubernetes-Failover/Healthcheck/RBAC.yaml -f /home/wawright/workspace/Multi-Cloud-Kubernetes-Failover/Healthcheck/deploy.yml -f /home/wawright/workspace/Multi-Cloud-Kubernetes-Failover/Dashboard/deploy.yml
+kubectl apply -f /home/wawright/workspace/Multi-Cloud-Kubernetes-Failover/Operator/deploy.yaml
+kubectl apply -f /home/wawright/workspace/Multi-Cloud-Kubernetes-Failover/Dashboard/cert.yaml
+kubectl apply -f /home/wawright/workspace/Multi-Cloud-Kubernetes-Failover/Dashboard/services.yaml
+kubectl apply -f /home/wawright/workspace/Multi-Cloud-Kubernetes-Failover/Dashboard/ingress.yaml

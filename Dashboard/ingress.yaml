@@ -1,0 +1,21 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: cloudwatch-dashboard
+  namespace: cloudwatch
+spec:
+  rules:
+  - host: cloudwatch.lootbot.cloud
+    http:
+      paths:
+      - backend:
+          service:
+            name: cloudwatch-dashboard-service
+            port:
+              number: 80
+        path: /
+        pathType: Prefix
+  tls:
+  - hosts:
+    - cloudwatch.lootbot.cloud
+    secretName: cloudwatch-dashboard-tls
