@@ -1,0 +1,178 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: cloudwatch
+---
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+ namespace: cloudwatch
+ name: cloudwatch-privileged-role
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - pods
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - apps
+  resources:
+  - deployments
+  verbs:
+  - list
+  - get
+- apiGroups:
+  - apps
+  resources:
+  - daemonsets
+  verbs:
+  - list
+  - get
+- apiGroups:
+  - ""
+  resources:
+  - services
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+ name: cloudwatch-privileged-binding
+ namespace: cloudwatch
+subjects:
+- kind: ServiceAccount
+  name: cloudwatch-privileged
+  namespace: cloudwatch
+roleRef:
+ kind: Role
+ name: cloudwatch-privileged-role
+ apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: cloudwatch-privileged-cluster-role
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - nodes
+  verbs:
+  - get
+  - patch
+  - list
+  - watch
+- apiGroups:
+  - "apps"
+  resources:
+  - deployments
+  verbs:
+  - get
+  - list
+- apiGroups:
+  - "apps"
+  resources:
+  - daemonSets
+  verbs:
+  - get
+  - list
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+ name: cloudwatch-privileged-cluster-binding
+subjects:
+- kind: ServiceAccount
+  name: cloudwatch-privileged
+  namespace: cloudwatch
+roleRef:
+ kind: ClusterRole
+ name: cloudwatch-privileged-cluster-role
+ apiGroup: rbac.authorization.k8s.io
+---
+ apiVersion: v1
+ kind: ServiceAccount
+ metadata:
+   name: "cloudwatch-privileged"
+   namespace: cloudwatch
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: cloudwatch-dashboard
+  name: cloudwatch-dashboard
+  namespace: cloudwatch
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: cloudwatch-dashboard
+  template:
+    metadata:
+      labels:
+        app: cloudwatch-dashboard
+    spec:
+      containers:
+      - env:
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: POD_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+        - name: POD_SERVICEACCOUNT
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.serviceAccountName
+        image: ghcr.io/william86370/cloudwatch-dashboard:latest
+        imagePullPolicy: Always
+        name: cloudwatch-dashboard
+        ports:
+        - containerPort: 28015
+          name: http
+          protocol: TCP
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      serviceAccount: cloudwatch-privileged
+      serviceAccountName: cloudwatch-privileged
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cloudwatch-dashboard-service
+  namespace: cloudwatch
+spec:
+  ports:
+  - name: http
+    port: 80
+    protocol: TCP
+    targetPort: 28015
+  selector:
+    app: cloudwatch-dashboard
+  type: ClusterIP

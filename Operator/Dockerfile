@@ -22,4 +22,8 @@ COPY ./${PYTHON_APP} /app/${TARGET_APP}
 ENV PORT=${HEALTHCHECK_PORT}
 EXPOSE ${HEALTHCHECK_PORT}
 ENV PYTHON_APP=${PYTHON_APP}
+
+# COPY YAML
+COPY ./deploy-dashboard.yaml /app/deploy-dashboard.yaml
+COPY ./deploy-daemonset.yaml /app/deploy-daemonset.yaml
 CMD python3 ${PYTHON_APP}

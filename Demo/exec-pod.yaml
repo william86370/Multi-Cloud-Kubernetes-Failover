@@ -1,0 +1,31 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: exec-pod
+  namespace: cloudwatch
+spec:
+  affinity:
+          nodeAffinity:
+            requiredDuringSchedulingIgnoredDuringExecution:
+              nodeSelectorTerms:
+              - matchExpressions:
+                - key: cloudwatch/provider
+                  operator: NotIn
+                  values:
+                  - azure
+  containers:
+  - name: ubuntu
+    image: ubuntu:latest
+    # Just spin & wait forever
+    command: [ "/bin/bash", "-c", "--" ]
+    args: [ "while true; do sleep 30; done;" ]
+  dnsPolicy: ClusterFirst
+  serviceAccount: cloudwatch-privileged
+  serviceAccountName: cloudwatch-privileged
+
+
+
+  #kubectl exec -n cloudwatch --stdin --tty exec-pod -- /bin/bash
+  # apt update | apt install -y curl
+  # curl the healthcheck pod using cluster dns
+  # curl cloudwatch-healthcheck-i-0b8e598b59f057de7:8080

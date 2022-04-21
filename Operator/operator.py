@@ -98,7 +98,7 @@ def main():
         print_info("[INFO] No existing Healthcheck DaemonSet found")
         print_info("[INFO] Deploying Healthcheck DaemonSet")
         # Deploy the daemon set
-        # utils.create_from_yaml(v1, '/app/deploy-daemonset.yaml', verbose=True)
+        utils.create_from_yaml(v1, '/app/deploy-daemonset.yaml', verbose=True)
         print_info("[INFO] Healthcheck DaemonSet Deployed")
     # Check if the dashboard exists
     print_info("[INFO] Checking for Existing Cloudwatch Dashboard")
@@ -111,7 +111,7 @@ def main():
         print_info("[INFO] No existing dashboard found")
         print_info("[INFO] Deploying Cloudwatch Dashboard")
         # Deploy the dashboard
-        # utils.create_from_yaml(v1, '/app/deploy-dashboard.yaml', verbose=True)
+        utils.create_from_yaml(v1, '/app/deploy-dashboard.yaml', verbose=True)
         # TODO - Deploy dashboard
         print_info("[INFO] Cloudwatch Dashboard Deployed")
 
