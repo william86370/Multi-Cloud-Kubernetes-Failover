@@ -7,6 +7,8 @@
 # It is responsible for setting up the flask server and handling all requests.
 
 import json
+
+import requests
 from flask import Flask, render_template
 # Add CORS support
 from flask_cors import CORS, cross_origin
@@ -65,6 +67,38 @@ app = Flask(__name__)
 @app.route("/")
 def default():
     return render_template('Home.html')
+
+
+@app.route("/api/v1/cloudwatch/healthcheck")
+def get_healthcheck():
+    global v1_api
+    global v1_api_apps
+    global pod_namespace
+    service_port = 8080
+    # Using the names of the nodes in the cluster
+    # send get request to each healthcheck endpoint
+    # and return the response
+    node_list = v1_api.list_node()
+    healthcheck_results = []
+    for node in node_list.items:
+        service_name = "cloudwatch-healthcheck-" + node.metadata.name
+        # Check if the service exists
+        service = v1_api.read_namespaced_service(service_name, pod_namespace)
+        if service is not None:
+            # Make a get request to the service endpoint
+            path = ''
+            url = f'http://{service_name}:{service_port}/{path}'
+            try:
+                response = requests.get(url, timeout=1)
+                if response.status_code == 200:
+                    healthcheck_results.append({"node": node.metadata.name, "status": "UP"})
+                else:
+                    healthcheck_results.append({"node": node.metadata.name, "status": "DOWN"})
+            except requests.exceptions.ConnectionError:
+                healthcheck_results.append(
+                    {"node": node.metadata.name, "Status": "ERROR"})
+
+    return json.dumps(healthcheck_results)
 
 
 @app.route("/api/v1/cloudwatch/namespace")
