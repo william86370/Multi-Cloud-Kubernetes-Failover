@@ -42,9 +42,6 @@ build-cloudwatch-dashboard:
 	@echo "Building cloudwatch-dashboard container"
 	@docker build --pull --build-arg PYTHON_APP=${dashboard_app} --build-arg PYTHON_VERSION=${python_version} --build-arg HEALTHCHECK_PORT=${dashboard_port} -t ${REPO}/cloudwatch-dashboard:${application_version} -f ./Dashboard/Dockerfile ./Dashboard
 
-.PHONY: build-all
-build-all: build-cloudwatch-healthcheck-init build-cloudwatch-healthcheck build-cloudwatch-operator build-cloudwatch-dashboard
-
 .PHONY: push-all
 push-all:
 	@echo "+ $@"
@@ -56,3 +53,6 @@ push-all:
 	@docker push ${REPO}/cloudwatch-operator:${application_version}
 	@echo "Pushing cloudwatch-dashboard container"
 	@docker push ${REPO}/cloudwatch-dashboard:${application_version}
+
+.PHONY: build-all
+build-all: build-cloudwatch-healthcheck-init build-cloudwatch-healthcheck build-cloudwatch-operator build-cloudwatch-dashboard push-all
