@@ -20,18 +20,17 @@ def get_cloud_provider():
     # https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-instance-identity-id.html
 
     # Check if cloud provider is AWS
-    try:
-        path = 'latest/dynamic/instance-identity/document'
-        url = f'http://169.254.169.254/{path}'
-        response = requests.get(url, timeout=5)
-        if response.status_code == 200:
-            # Check Availability Zone
-            availability_zone = response.json()['availabilityZone']
-            if availability_zone.startswith('us-east-'):
-                return 'AWS'
-            else:
-                return 'Azure'
-    finally:
+    path = 'latest/dynamic/instance-identity/document'
+    url = f'http://169.254.169.254/{path}'
+    response = requests.get(url, timeout=5)
+    if response.status_code == 200:
+        # Check Availability Zone
+        availability_zone = response.json()['availabilityZone']
+        if availability_zone.startswith('us-east-'):
+            return 'aws'
+        else:
+            return 'azure'
+    else:
         return "self-hosted"
 
 
