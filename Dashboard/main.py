@@ -67,6 +67,29 @@ def default():
     return render_template('Home.html')
 
 
+@app.route("/api/v1/cloudwatch/namespace")
+def get_protected_namespaces():
+    # Get the number of namespaces with the cloudwatch annotation
+    global v1_api
+    global v1_api_apps
+    # Get all of the required information from the kubernetes api using v1_api
+    print("[INFO] Getting Cloudwatch Namespaces")
+    protected_namespaces = []
+    namespace_list = v1_api.list_namespace()
+    for namespace in namespace_list.items:
+        namespace_annotation = namespace.metadata.annotations
+        if namespace_annotation is not None:
+            # Check if the namespace has the cloudwatch annotation set to true
+            if "cloudwatch/failover" in namespace_annotation:
+                if namespace_annotation.get('cloudwatch/failover') == 'true':
+                    protected_namespaces.append(namespace.metadata.name)
+    if len(protected_namespaces) == 0:
+        print_warning("[WARN] No protected namespaces found")
+    else:
+        print_info("[INFO] Protected namespaces found: " + str(len(protected_namespaces)))
+    return json.dumps(protected_namespaces)
+
+
 def get_nodes_online():
     # Get the number of nodes online
     global v1_api

@@ -28,17 +28,17 @@ def get_cloud_provider():
         availability_zone = response.json()['availabilityZone']
         if availability_zone.startswith('us-east-'):
             return 'aws'
-    
+
     # Check if cloud provider is Azure
     path = 'metadata/instance?api-version=2021-02-01'
     url = f'http://169.254.169.254/{path}'
-    response = requests.get(url, timeout=5,headers={'Metadata':'true'})
+    response = requests.get(url, timeout=5, headers={'Metadata': 'true'})
     if response.status_code == 200:
         # Check Availability Zone
         compute = response.json()['compute']['azEnvironment']
         if compute.startswith('AzurePublicCloud'):
             return 'azure'
-    
+
     return "self-hosted"
 
 
