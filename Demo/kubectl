@@ -1,0 +1,9 @@
+export KUBECONFIG=/home/wawright/workspace/Multi-Cloud-Kubernetes-Failover/Demo/kubeconfig
+
+
+
+kubectl --namespace cloudwatch get pods
+
+
+
+kubectl logs cloudwatch-dashboard-64c6999857-6mn29 --tail=100
